@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LABEASE MVP Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      padding: 40px;
+      margin: 0;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #003366;
+      font-size: 36px;
+    }
+    .section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      text-decoration: none;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 8px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .metrics-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .metric-box {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 20px 30px;
+      text-align: center;
+      width: 250px;
+    }
+    .metric-box h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
+    .metric-box p {
+      font-size: 18px;
+      color: #555;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-style: italic;
+      color: #666;
+    }
+    .loading {
+      color: #999;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>LABEASE MVP Dashboard</h1>
+
+  <div class="section">
+    <a href="https://forms.gle/RBg5FjHaUatTiLGc7" target="_blank" class="button">📤 Offer Equipment</a>
+    <a href="https://forms.gle/MkZnDJqufK3hastK9" target="_blank" class="button">📥 Borrow Equipment</a>
+    <a href="https://docs.google.com/spreadsheets/d/1py0NKdRWefWhKWlSb_50Y1a9siKeYski7LfYxcaqHpc/edit?usp=sharing" target="_blank" class="button">📊 Admin Sheet</a>
+  </div>
+
+  <div class="metrics-container">
+    <div class="metric-box">
+      <h2 id="totalListings" class="loading">–</h2>
+      <p>Total Equipment Listings</p>
+    </div>
+    <div class="metric-box">
+      <h2 id="totalRequests" class="loading">–</h2>
+      <p>Total Borrow Requests</p>
+    </div>
+    <div class="metric-box">
+      <h2 id="totalQuantity" class="loading">–</h2>
+      <p>Total Equipment Quantity</p>
+    </div>
+    <div class="metric-box">
+      <h2 id="potentialRevenue" class="loading">–</h2>
+      <p>Potential Revenue (10%)</p>
+    </div>
+    <div class="metric-box">
+      <h2 id="totalRevenue" class="loading">–</h2>
+      <p>Total Revenue</p>
+    </div>
+  </div>
+
+  <footer>
+    This dashboard shows live interest in renting and offering lab equipment.<br>
+    LABEASE — Empowering Practical Learning
+  </footer>
+
+  <script>
+    const SHEET_ID = "1py0NKdRWefWhKWlSb_50Y1a9siKeYski7LfYxcaqHpc";
+    const ADMIN_SHEET_NAME = "ADMIN";
+
+    const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${ADMIN_SHEET_NAME}`;
+
+    function formatRupee(num) {
+      if (num == null || isNaN(num)) return "₹0";
+      return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(num);
+    }
+
+    fetch(JSON_URL)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+        const rows = json.table.rows;
+
+        // Adjusted row indexes due to extra rows at top of sheet
+        document.getElementById("totalListings").innerText      = rows[0]?.c[1]?.v || 0;
+        document.getElementById("totalRequests").innerText      = rows[1]?.c[1]?.v || 0;
+        document.getElementById("totalQuantity").innerText      = rows[2]?.c[1]?.v || 0;
+        document.getElementById("potentialRevenue").innerText   = formatRupee(rows[3]?.c[1]?.v);
+        document.getElementById("totalRevenue").innerText       = formatRupee(rows[4]?.c[1]?.v);
+      })
+      .catch(err => {
+        console.error("Error fetching Admin sheet JSON:", err);
+        const ids = ["totalListings", "totalRequests", "totalQuantity", "potentialRevenue", "totalRevenue"];
+        ids.forEach(id => {
+          document.getElementById(id).innerText = "N/A";
+        });
+      });
+  </script>
+
+</body>
+</html>
